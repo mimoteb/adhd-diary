@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js'></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>Coping Entries</title>
+    <style>
+        /* Custom styles to improve visibility and reduce spacing */
+        input[type="text"], textarea {
+            border: 2px solid #4A5568;
+            padding: 6px;
+            background-color: #f9fafb;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .form-spacing {
+            margin-bottom: 0.5rem;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table th, table td {
+            padding: 8px;
+        }
+        textarea {
+            resize: none;
+            height: 60px;
+        }
+        .sidebar {
+            height: 100vh;
+        }
+        .calendar-container,
+        .add-entry-container {
+            flex: 1;
+            padding: 16px;
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans flex flex-wrap md:flex-nowrap">
+    {% set container_class = "container mx-auto py-5" %}
+    {% set sidebar_class = "w-full md:w-1/5 bg-blue-800 text-white px-4 py-6 sidebar" %}
+    {% set nav_link_class = "block py-2 px-3 rounded hover:bg-blue-600 transition" %}
+    {% set heading_class = "text-3xl font-bold text-center mb-6 text-blue-600" %}
+    {% set form_class = "bg-white rounded shadow-lg p-4 mb-4" %}
+    {% set input_class_small = "mt-1 block w-full md:w-1/2 rounded-md border-gray-300" %}
+    {% set input_class_large = "mt-1 block w-full rounded-md border-gray-300" %}
+    {% set textarea_class = "mt-1 block w-full rounded-md border-gray-300" %}
+    {% set button_class = "bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700" %}
+    {% set table_container_class = "bg-white rounded shadow-lg p-4 table-container" %}
+    {% set table_class = "min-w-full bg-white" %}
+    {% set th_class = "py-1 px-3 border-b-2" %}
+    {% set td_class = "py-1 px-3 border-b" %}
+    {% set action_link_class = "text-blue-600 hover:underline" %}
+    {% set delete_button_class = "text-red-600 hover:underline ml-2" %}
+    {% set label_class = "block text-sm font-medium text-gray-700" %}
+
+    <!-- Sidebar Navigation -->
+    <nav class="{{ sidebar_class }}">
+        <h2 class="text-xl font-bold mb-6">Navigation</h2>
+        <a href="/" class="{{ nav_link_class }}">Home</a>
+        <a href="/add" class="{{ nav_link_class }}">Add Entry</a>
+        <a href="/calendar" class="{{ nav_link_class }}">Calendar</a>
+        <a href="/login" class="{{ nav_link_class }}">Login</a>
+        <a href="/logout" class="{{ nav_link_class }}">Logout</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6 flex flex-col md:flex-row gap-6">
+        <!-- Calendar View and Selected Day's Entries -->
+        <div class="calendar-container">
+            <h2 class="text-2xl font-semibold text-blue-600 mb-4">Calendar View</h2>
+            <div id='calendar' class="bg-gray-100 p-4 rounded shadow-md"></div>
+            <!-- Selected Day's Entries -->
+            <div class="{{ table_container_class }} mt-4" id="selected-entries">
+                <h2 class="text-xl font-semibold mb-3 text-blue-600">Selected Day's Entries</h2>
+                <table class="{{ table_class }}">
+                    <thead>
+                        <tr>
+                            <th class="{{ th_class }}">Date</th>
+                            <th class="{{ th_class }}">Time</th>
+                            <th class="{{ th_class }}">Trigger</th>
+                            <th class="{{ th_class }}">Emotion/Reaction</th>
+                            <th class="{{ th_class }}">Behavior/Response</th>
+                            <th class="{{ th_class }}">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="entry-table-body">
+                        <!-- Entries will be populated here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Add Entry Form -->
+        <div class="flex-1 add-entry-container">
+            <div class="{{ form_class }}">
+                <form action="/add" method="POST" class="form-spacing">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="{{ label_class }}">Date</label>
+                            <input type="text" name="date" class="{{ input_class_small }}" required>
+                        </div>
+                        <div>
+                            <label class="{{ label_class }}">Time</label>
+                            <input type="text" name="time" class="{{ input_class_small }}" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="{{ label_class }}">Trigger</label>
+                            <input type="text" name="trigger" class="{{ input_class_large }}" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="{{ label_class }}">Emotion/Reaction</label>
+                            <textarea name="emotion_reaction" class="{{ textarea_class }}" required></textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="{{ label_class }}">Behavior/Response</label>
+                            <textarea name="behavior_response" class="{{ textarea_class }}" required></textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="{{ label_class }}">Consequences</label>
+                            <textarea name="consequences" class="{{ textarea_class }}" required></textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="{{ label_class }}">Thoughts</label>
+                            <textarea name="thoughts" class="{{ textarea_class }}" required></textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="{{ label_class }}">Coping Strategy</label>
+                            <textarea name="coping_strategy" class="{{ textarea_class }}" required></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-right">
+                        <button type="submit" class="{{ button_class }}">Add Entry</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                selectable: true,
+                dateClick: function(info) {
+                    fetchEntriesForDate(info.dateStr);
+                }
+            });
+            calendar.render();
+
+            // Load entries for today by default
+            var today = new Date().toISOString().split('T')[0];
+            fetchEntriesForDate(today);
+
+            function fetchEntriesForDate(date) {
+                $.ajax({
+                    url: '/get_entries',  // Backend endpoint that returns JSON data of entries for the given date
+                    type: 'GET',
+                    data: { date: date },
+                    success: function(entries) {
+                        var tbody = $('#entry-table-body');
+                        tbody.empty();
+                        entries.forEach(function(entry) {
+                            var row = `<tr class="bg-gray-50 hover:bg-gray-100">
+                                <td class="{{ td_class }}">${entry.date}</td>
+                                <td class="{{ td_class }}">${entry.time}</td>
+                                <td class="{{ td_class }}">${entry.trigger}</td>
+                                <td class="{{ td_class }}">${entry.emotion_reaction}</td>
+                                <td class="{{ td_class }}">${entry.behavior_response}</td>
+                                <td class="{{ td_class }}">
+                                    <a href="/edit/${entry.id}" class="{{ action_link_class }}">Edit</a>
+                                    <form action="/delete/${entry.id}" method="POST" class="inline">
+                                        <button type="submit" class="{{ delete_button_class }}">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>`;
+                            tbody.append(row);
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

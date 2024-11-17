@@ -1,0 +1,2 @@
+database:
+  uri: 'sqlite:////home/solomon/data/priv/databases/adhd-diary.db'
